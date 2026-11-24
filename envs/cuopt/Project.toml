@@ -1,0 +1,6 @@
+[deps]
+ECTSP = "45c44e52-b45c-4303-b29b-54529008acdf"
+cuOpt = "29a73d17-8276-40b7-9ffb-d89e58023643"
+
+[sources]
+ECTSP = {path = "../.."}
