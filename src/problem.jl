@@ -44,6 +44,50 @@ function TestProblem(soc::SOC; max_width::Integer=64, include_top::Bool=false)
 end
 
 """
+    pareto_curve(p, i) -> Vector{Tuple{Int,Int}}
+
+The Pareto-optimal `(width, time)` points of core `i`: the widths at which its test time drops,
+narrowest first. The whole row `p.T[i, :]` is the staircase through these points.
+"""
+function pareto_curve(p::TestProblem, i::Integer)
+    pts = Tuple{Int,Int}[]
+    for w in 1:max_width(p)
+        (w == 1 || p.T[i, w] < p.T[i, w-1]) && push!(pts, (w, p.T[i, w]))
+    end
+    return pts
+end
+
+"""
+    TestProblem(name, curves; max_width=64, ids=1:length(curves), bist=zeros)
+
+Build the problem from given Pareto curves instead of a wrapper design: `curves[i]` lists the
+`(width, time)` points of core `i`. A core takes, on a TAM of width `w`, the time of its widest
+point not wider than `w`; every curve needs a point of width 1. Dominated points are ignored.
+"""
+function TestProblem(name::AbstractString, curves::AbstractVector; max_width::Integer=64,
+                     ids::AbstractVector{<:Integer}=1:length(curves),
+                     bist::AbstractVector{<:Integer}=zeros(Int, length(curves)))
+    max_width >= 1 || throw(ArgumentError("max_width must be at least 1"))
+    length(ids) == length(curves) == length(bist) || throw(ArgumentError("curves, ids and bist differ in length"))
+    T = Matrix{Int}(undef, length(curves), max_width)
+    for (i, curve) in enumerate(curves)
+        pts = sort!([(Int(w), Int(t)) for (w, t) in curve])
+        isempty(pts) && throw(ArgumentError("core $(ids[i]) has an empty curve"))
+        all(pt -> pt[1] >= 1 && pt[2] >= 0, pts) || throw(ArgumentError("core $(ids[i]): widths must be >= 1 and times >= 0"))
+        pts[1][1] == 1 || throw(ArgumentError("core $(ids[i]) has no point of width 1"))
+        k, best = 0, typemax(Int)
+        for w in 1:max_width
+            while k < length(pts) && pts[k+1][1] <= w
+                k += 1
+                best = min(best, pts[k][2])
+            end
+            T[i, w] = best
+        end
+    end
+    return TestProblem(String(name), collect(Int, ids), T, collect(Int, bist))
+end
+
+"""
     lower_bound(p, W) -> Int
 
 Architecture-independent lower bound on the test time with `W` TAM wires: no core can be faster

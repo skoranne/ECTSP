@@ -216,4 +216,18 @@ end
             @test fixed.makespan == best.makespan && fixed.assignment == best.assignment
         end
     end
+
+    @testset "Pareto curves as input" begin
+        d = TestProblem(load_benchmark("d695"); max_width=32)
+        curves = [pareto_curve(d, i) for i in 1:ncores(d)]
+        @test curves[1] == [(1, 428), (2, 220), (3, 155), (4, 116), (5, 103), (6, 90), (7, 77), (8, 64), (11, 51), (16, 38), (32, 25)]
+        @test all(c -> issorted(c; by=first) && issorted(c; by=last, rev=true) && allunique(last.(c)), curves)
+        g = TestProblem("d695", curves; max_width=32, ids=d.ids)
+        @test g.T == d.T && g.ids == d.ids
+        @test solve_best_fit(g, 16, 3).makespan == solve_best_fit(d, 16, 3).makespan
+        q = TestProblem("toy", [[(1, 100), (4, 30), (3, 50), (5, 40)], [(1, 7)]]; max_width=6)
+        @test q.T == [100 100 50 30 30 30; 7 7 7 7 7 7]
+        @test pareto_curve(q, 1) == [(1, 100), (3, 50), (4, 30)]      # (5, 40) is dominated
+        @test_throws ArgumentError TestProblem("bad", [[(2, 10)]])
+    end
 end

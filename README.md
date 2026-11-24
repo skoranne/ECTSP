@@ -36,6 +36,8 @@ times, a mixed-integer baseline in JuMP, and the single source unsplittable flow
 using ECTSP
 soc = load_benchmark("d695")                  # or parse_soc("path/to/file.soc")
 p   = TestProblem(soc; max_width=32)          # p.T[i, w]: cycles of core i on a TAM of width w
+pareto_curve(p, 4)                            # Pareto-optimal (width, time) points of core 4
+p2  = TestProblem("mysoc", [[(1, 900), (2, 460), (4, 240)], [(1, 300), (3, 110)]]; max_width=32)   # curves given
 lower_bound(p, 32)                            # architecture-independent bound for W = 32
 s   = solve_baseline(p, 32, 3)                # 32 wires in exactly 3 TAMs  -> Schedule
 best, all = solve_baseline(p, 32; max_tams=4) # B = 1..4, best one first
@@ -85,6 +87,12 @@ the longest scan-in and scan-out chain and `p` patterns, a test takes
 inputs and outputs are levelled over the chains (`wrapper_lengths`); `T[i, w]` is the best over
 `1..w` wires, so it never increases with `w`. Bidirectional terminals count as an input and an
 output cell.
+
+**Pareto curves are the input.** Every solver sees only the table `T[i, w]`, the staircase through
+the Pareto-optimal `(width, time)` points of each core (`pareto_curve`). The wrapper design above
+is one way to obtain the curves from an ITC'02 file; curves from any other source go in through
+`TestProblem(name, curves)`, where a core on a TAM of width `w` takes the time of its widest point
+not wider than `w`.
 
 **Benchmark conventions.** The hierarchy is flattened (every module is a wrapped core). The level-0
 module is left out unless `include_top=true`. A module's TAM tests run back to back; tests with
