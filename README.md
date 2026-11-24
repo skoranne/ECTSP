@@ -133,22 +133,31 @@ with flow left over (`exceptions`); none occurred in 300 000 random graphs nor o
 and the test suite checks the bound on 3 000 random graphs.
 
 **The scheduling network** for TAM widths `w_1..w_B`: `source -> TAM j -> core i`, a terminal of
-demand `d_i = min_j T[i, w_j]` at every core. Core `i` is admissible on TAM `j` when
-`T[i, w_j] <= rho * d_i` and `T[i, w_j] <= C`. The smallest `C` with a fractional flow of at most
-`C` per TAM is found by bisection over a maximum flow, and that flow is rounded. Then:
+demand `d_i` at every core. `solve_ufp` has two demand models (`model=:bits`, `:time`, or `:both`,
+the default, which keeps the better schedule):
 
-- every TAM carries at most `C + max_i d_i` in demand units, so the test time is at most
-  `rho * (C + max_i d_i)`;
-- with TAMs of one width (or `rho = 1`) the demands are the true times: `C <= OPT`, `d_i <= OPT`,
-  the schedule is within a factor 2 of the optimum for those widths;
-- with `rho = Inf` the fractional `C` is a lower bound on the optimum for those widths
-  (`ufp_fractional_bound`), because demands only under-estimate the times.
+- `:bits`, the formulation of Koranne and Choudhary (DATE 2002): the commodity is test data. A TAM
+  of width `w_j` carries `w_j` bits per cycle, so for a trial test time `C` its capacity is
+  `C * w_j`; core `i` on TAM `j` uses `w_j * T[i, w_j]` wire-cycles and `d_i = min_j w_j * T[i, w_j]`.
+- `:time`: the commodity is test time, every TAM has capacity `C` and `d_i = min_j T[i, w_j]`.
 
-On TAMs of different widths a core is slower than `d_i` on the narrow ones, which the flow does not
-see. `solve_ufp` therefore rounds once per `rho` in `UFP_SLOWDOWNS` (1 to 3, and `Inf`) and keeps
-the schedule with the smallest true test time; `slowdowns=(Inf,)` gives the plain formulation.
-`solve_ufp(p, W, B)` does this for every partition of `W` into `B` widths (1906 partitions for
-`W = 64`, `B = 4`), in parallel over Julia threads.
+Core `i` is admissible on TAM `j` when `T[i, w_j] <= C` and when it costs there at most
+`rho * d_i`. The smallest `C` with a fractional flow is found by bisection over a maximum flow, and
+that flow is rounded. Then:
+
+- every TAM carries at most its capacity plus `max_i d_i`;
+- with TAMs of one width the two models coincide and the demands are the true times: `C <= OPT`,
+  `d_i <= OPT`, the schedule is within a factor 2 of the optimum for those widths;
+- with `rho = Inf` the fractional `C` is a lower bound on the optimum for those widths in either
+  model (`ufp_fractional_bound` returns the larger), because a demand never exceeds what the core
+  really uses.
+
+On TAMs of different widths a core can cost more than `d_i` on the TAM it gets, which the flow does
+not see. `solve_ufp` therefore rounds once per `rho` in `UFP_SLOWDOWNS` (1 to 3, and `Inf`) and
+keeps the schedule with the smallest true test time; `slowdowns=(Inf,)` gives the plain formulation.
+`improve=true` adds a descent after the rounding (moves and exchanges off the longest TAM); it is
+not part of the flow method and is off by default. `solve_ufp(p, W, B)` does all this for every
+partition of `W` into `B` widths (1906 partitions for `W = 64`, `B = 4`), in parallel over Julia threads.
 
 ## Greedy, best fit, shortest job first
 
@@ -179,36 +188,18 @@ All runs on spark-bc08, `W = 16, 32, 64`, `B = 1..4`, all twelve benchmarks (144
 | MILP, cuOpt | `results/baseline_spark-bc08_cuopt.md` | 142 of 144 | 120 s limit; hit on p93791 `W=32`, `B=4` and `W=64`, `B=4` |
 | unsplittable flow | `results/ufp_spark-bc08.md` | heuristic | under 1 s per `(SOC, W)` for all `B` together, 16 threads |
 
-HiGHS and cuOpt agree to within 0.1% on every case. Best `B <= 4`, test time in cycles:
-
-| SOC | W | MILP | unsplittable flow | over MILP |
-|---|---:|---:|---:|---:|
-| d695 | 16 | 42268 | 47320 | 11.95% |
-| d695 | 32 | 21437 | 23010 | 7.34% |
-| d695 | 64 | 10985 | 11564 | 5.27% |
-| p22810 | 16 | 434957 | 467506 | 7.48% |
-| p22810 | 32 | 229612 | 256012 | 11.50% |
-| p22810 | 64 | 140941 | 155611 | 10.41% |
-| p34392 | 16 | 972352 | 1158654 | 19.16% |
-| p34392 | 32 | 544579 | 584524 | 7.34% |
-| p34392 | 64 | 544579 | 544579 | 0.00% |
-| p93791 | 16 | 1763978 | 1852513 | 5.02% |
-| p93791 | 32 | 886518 | 954083 | 7.62% |
-| p93791 | 64 | 447144 | 485185 | 8.51% |
-
-The unsplittable flow schedule equals the MILP one on u226, h953, f2126, q12710 and (to 0.01%)
-t512505, and is within 3.2% on d281, 8.3% on g1023 and 1.5% on a586710. The `.csv` files have one
-row per `(SOC, W, B)` with the TAM widths and the core assignment.
+HiGHS and cuOpt agree to within 0.1% on every case. The `.csv` files have one row per `(SOC, W, B)`
+with the TAM widths and the core assignment.
 
 All combinatorial solvers against the MILP (`results/heuristics_spark-bc08.md` has every case),
 36 `(SOC, W)` cases, best `B <= 4`, excess of the test time over the MILP:
 
 | method | mean | median | worst | best or tied among the four | seconds, all cases |
 |---|---:|---:|---:|---:|---:|
-| unsplittable flow | 3.36% | 0.00% | 19.16% | 19 | 5.17 |
-| greedy | 0.79% | 0.00% | 12.66% | 28 | 0.14 |
-| best fit | 0.47% | 0.00% | 4.02% | 32 | 0.02 |
-| shortest job first | 14.36% | 12.53% | 42.51% | 6 | 0.01 |
+| unsplittable flow | 1.88% | 0.00% | 10.41% | 21 | 10.27 |
+| greedy | 0.79% | 0.00% | 12.66% | 28 | 0.19 |
+| best fit | 0.47% | 0.00% | 4.02% | 32 | 0.03 |
+| shortest job first | 14.36% | 12.53% | 42.51% | 6 | 0.02 |
 
 Best fit over all width partitions is within 4.1% of the MILP everywhere and takes milliseconds;
 the unsplittable flow is the only one of the four with a proven factor (2, on equal widths) and

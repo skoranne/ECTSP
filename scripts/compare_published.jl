@@ -83,35 +83,46 @@ function main(args)
     println(io, "## Koranne, Choudhary (DATE 2002): d695, ILP against TFLOW\n")
     println(io, "Published: Table 1 of \"Formulation of SOC Test Scheduling as a Network Transportation Problem\": the lpsolve")
     println(io, "results of Iyengar and Chakrabarty (ETW 2001; `+` = stopped at 180 minutes) and the unsplittable flow planner")
-    println(io, "TFLOW with its width partition. Ours: the solvers of this repository on the TFLOW partition, and the MILP over")
+    println(io, "TFLOW with its width partition. Ours: the solvers of this repository on the TFLOW partition (unsplittable flow\n" *
+            "with both demand models of `solve_ufp`), and the MILP over")
     println(io, "all partitions into the same number of TAMs.\n")
-    println(io, "| W | lpsolve [ETW01] | TFLOW | TFLOW partition | ours on that partition: MILP | unsplittable flow | best fit | greedy | ours, same W and B: MILP | widths | against TFLOW |")
-    println(io, "|---:|---:|---:|---|---:|---:|---:|---:|---:|---|---:|")
+    println(io, "| W | lpsolve [ETW01] | TFLOW | TFLOW partition | ours on that partition: MILP | unsplittable flow, bits | unsplittable flow, time | flow + moves | best fit | greedy | ours, same W and B: MILP | widths | against TFLOW |")
+    println(io, "|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---|---:|")
     p = problems["d695"]
-    cmp = (opt=0, ufp=0, better=0)
+    cmp = (opt=0, bits=0, time=0, moves=0, movesopt=0, better=0)
+    ex = (bits=Float64[], time=Float64[])
     for (W, ilp, tf, part) in KC
         w = sort(part)
         s = solve_assignment(p, w; mip_gap=0.0, time_limit=tl)
-        u = solve_ufp(p, w)
+        u = solve_ufp(p, w; model=:bits)
+        ut = solve_ufp(p, w; model=:time)
+        um = solve_ufp(p, w; improve=true)
+        push!(ex.bits, (u.makespan - tf) / tf); push!(ex.time, (ut.makespan - tf) / tf)
         bf = solve_best_fit(p, w)
         g = solve_greedy(p, w)
         b = solve_baseline(p, W, length(w); mip_gap=0.0, time_limit=tl)
         b.makespan > s.makespan && (b = s)
-        cmp = (opt = cmp.opt + (s.makespan <= tf), ufp = cmp.ufp + (u.makespan <= tf), better = cmp.better + (b.makespan < min(ilp, tf)))
-        println(io, "| $W | $ilp$(W >= 48 ? "+" : "") | $tf | $(join(part, '+')) | $(s.makespan)$(mark(s)) | $(u.makespan) | $(bf.makespan) | ",
+        cmp = (opt = cmp.opt + (s.makespan <= tf), bits = cmp.bits + (u.makespan <= tf), time = cmp.time + (ut.makespan <= tf),
+               moves = cmp.moves + (um.makespan <= tf), movesopt = cmp.movesopt + (um.makespan == s.makespan), better = cmp.better + (b.makespan < min(ilp, tf)))
+        println(io, "| $W | $ilp$(W >= 48 ? "+" : "") | $tf | $(join(part, '+')) | $(s.makespan)$(mark(s)) | $(u.makespan) | $(ut.makespan) | $(um.makespan) | $(bf.makespan) | ",
                 "$(g.makespan) | $(b.makespan)$(mark(b)) | $(join(b.widths, '+')) | $(rel(b.makespan, tf)) |")
-        println("d695 W=", W, "  lpsolve ", ilp, "  TFLOW ", tf, "  ours on partition ", s.makespan, "  ufp ", u.makespan, "  same W,B ", b.makespan); flush(stdout)
+        println("d695 W=", W, "  lpsolve ", ilp, "  TFLOW ", tf, "  ours on partition ", s.makespan, "  ufp bits ", u.makespan, "  ufp time ", ut.makespan, "  same W,B ", b.makespan); flush(stdout)
     end
     n = length(KC)
     println(io, "\n- On the TFLOW partition our optimal assignment is at or below the TFLOW time in ", cmp.opt, " of ", n,
-            " rows and our unsplittable flow solver in ", cmp.ufp, " of ", n, ".")
+            " rows.")
+    println(io, "- Unsplittable flow on the TFLOW partition, against the TFLOW time: with test data as commodity (TAM capacity")
+    println(io, "  C * w_j, the model of the paper) at or below it in ", cmp.bits, " of ", n, " rows, mean ",
+            @sprintf("%+.2f%%", 100 * sum(ex.bits) / n), ", worst ", @sprintf("%+.2f%%", 100 * maximum(ex.bits)),
+            "; with test time as commodity in ", cmp.time, " of ", n, " rows, mean ", @sprintf("%+.2f%%", 100 * sum(ex.time) / n),
+            ", worst ", @sprintf("%+.2f%%", 100 * maximum(ex.time)), ".")
+    println(io, "- \"Flow + moves\" is `solve_ufp(...; improve=true)`: the better of the two roundings followed by moves and exchanges")
+    println(io, "  off the longest TAM. It is at or below the TFLOW time in ", cmp.moves, " of ", n, " rows and equals our optimum for the partition in ",
+            cmp.movesopt, " of ", n, ". The paper does not describe such a step; it is listed to show how far the rounding is from a local optimum.")
     println(io, "- Over all partitions with the same number of TAMs our MILP is below both published columns in ", cmp.better, " of ", n, " rows.")
     println(io, "- Where our optimum on the TFLOW partition is above the TFLOW time (W = 32: 21567 is one cycle from the 21566 of")
     println(io, "  the partition 4+10+18 above), the printed partition and time do not fit our core test times; TFLOW predates")
     println(io, "  the ITC'02 files and its core test time table is not available to us.")
-    println(io, "- Our unsplittable flow solver is clearly behind TFLOW on these partitions. The paper gives the TAM arc a capacity")
-    println(io, "  proportional to its width (T * w_j) and the demand of a core in test bits; `solve_ufp` takes as demand the time")
-    println(io, "  on the fastest TAM and gives every TAM the same capacity, which is weak when the widths are very unequal.")
     mkpath(dirname(opt["out"]))
     write(opt["out"], take!(io))
     println("wrote ", opt["out"])

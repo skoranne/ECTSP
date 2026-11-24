@@ -16,7 +16,7 @@ export wrapper_lengths, scan_test_time, test_time, bist_time
 export TestProblem, ncores, max_width, lower_bound, pareto_curve
 export Schedule, gap, build_schedule, validate, print_schedule
 export solve_assignment, solve_baseline
-export unsplittable_flow, solve_ufp, ufp_fractional_bound, width_partitions, UFP_SLOWDOWNS
+export unsplittable_flow, solve_ufp, ufp_fractional_bound, width_partitions, UFP_SLOWDOWNS, UFP_MODELS
 export solve_heuristic, solve_greedy, solve_best_fit, solve_sjf, HEURISTICS
 
 include("itc02.jl")

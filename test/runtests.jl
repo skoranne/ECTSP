@@ -181,6 +181,24 @@ end
                 @test maximum(load) <= C + maximum(dem)
                 @test all(Tw[i, a[i]] <= rho * dem[i] for i in 1:10)
             end
+            # test data as commodity: TAM j has capacity C * w_j, a core needs its least wire-cycles
+            bits, unit = ECTSP._ufp_model(Tw, widths, :bits)
+            @test unit == widths && bits == [minimum(widths .* Tw[i, :]) for i in 1:10]
+            for rho in (1.0, 1.5, Inf)
+                a, C, excess, exc = ECTSP._ufp_round(bits, Tw, unit, rho)
+                @test exc == 0 && excess <= 1.0
+                load = [sum(bits[i] for i in 1:10 if a[i] == j; init=0) for j in eachindex(widths)]
+                @test all(load .<= C .* widths .+ maximum(bits))
+                @test all(widths[a[i]] * Tw[i, a[i]] <= rho * bits[i] for i in 1:10)
+            end
+            for m in UFP_MODELS
+                sm = solve_ufp(d, widths; model=m)
+                @test validate(sm, d) && s.makespan <= sm.makespan
+                @test sm.bound == ufp_fractional_bound(d, widths; model=m) <= s.bound
+            end
+            @test_throws ArgumentError solve_ufp(d, widths; model=:nope)
+            si = solve_ufp(d, widths; improve=true)
+            @test validate(si, d) && opt.makespan <= si.makespan <= s.makespan
             if allequal(widths)                # identical TAMs: factor 2 of the optimum
                 @test s.makespan <= 2 * opt.makespan
             end

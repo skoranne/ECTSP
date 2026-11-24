@@ -75,7 +75,7 @@ function main(args)
     println(io, "- Solvers:")
     println(io, "  - **MILP**: widths and assignment in one model (JuMP), solved by HiGHS", isempty(cuopt) ? "" : " and by cuOpt",
             ". This is the exact method and the reference below.")
-    println(io, "  - **unsplittable flow**: fractional assignment by maximum flow, rounded with the Dinitz-Garg-Goemans algorithm.")
+    println(io, "  - **unsplittable flow**: fractional assignment by maximum flow, rounded with the Dinitz-Garg-Goemans algorithm; better of the two demand models (test data with TAM capacity proportional to the width, and test time).")
     println(io, "  - **greedy**: longest test first, each core to the TAM on which it finishes earliest.")
     println(io, "  - **best fit**: best fit decreasing into TAMs of capacity C, smallest feasible C by bisection.")
     println(io, "  - **shortest job first**: the greedy rule with the cores in increasing order.")
@@ -217,7 +217,7 @@ function main(args)
     end
     easy = [s for s in socs if all(m -> m == "sjf" || maximum(exS[(m, s)]) == 0, methods)]
     println(io, "5. SOCs on which every method except shortest job first reaches the MILP at all widths: ", join(easy, ", "),
-            ". There the longest core sets the test time (the MILP equals LB(W) at most widths), so any sensible assignment is optimal.")
+            ".")
     println(io, "6. With the number of TAMs fixed the differences are larger than with the best B (table above):",
             " taking the best of B = ", join(tams, ", "), " hides a poor result at one B behind a good one at another.")
     println(io, "7. The MILP is exact but its time grows with the number of cores and the width: ",

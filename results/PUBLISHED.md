@@ -33,9 +33,9 @@ time only if the core test times differ. "Same W, B" is our optimum over all wid
 | p93791 | 48 | 2 | 2+46 | 622199 | 622209 | +10 (+0.00%) | 622209 | 2+46 | +0.00% |
 | p93791 | 56 | 2 | 10+46 | 524203 | 524206 | +3 (+0.00%) | 524206 | 10+46 | +0.00% |
 | p93791 | 64 | 2 | 18+46 | 467424 | 467425 | +1 (+0.00%) | 467425 | 18+46 | +0.00% |
-| p93791 | 48 | 3 | 9+16+23 | 599373 | 599945 | +572 (+0.10%) | 597603* | 10+15+23 | -0.30% |
+| p93791 | 48 | 3 | 9+16+23 | 599373 | 599945 | +572 (+0.10%) | 599357* | 10+15+23 | -0.00% |
 | p93791 | 56 | 3 | 10+23+23 | 514688 | 516540 | +1852 (+0.36%) | 516540* | 10+23+23 | +0.36% |
-| p93791 | 64 | 3 | 18+23+23 | 460328 | 460784 | +456 (+0.10%) | 452966* | 9+9+46 | -1.60% |
+| p93791 | 64 | 3 | 18+23+23 | 460328 | 460784 | +456 (+0.10%) | 455124* | 9+9+46 | -1.13% |
 
 - Same widths: 12 of 24 published times reproduced exactly; largest difference 0.027% on d695 and 0.360% on p93791.
   Where they differ ours is the longer one: the core test times come from different wrapper designs
@@ -47,29 +47,31 @@ time only if the core test times differ. "Same W, B" is our optimum over all wid
 
 Published: Table 1 of "Formulation of SOC Test Scheduling as a Network Transportation Problem": the lpsolve
 results of Iyengar and Chakrabarty (ETW 2001; `+` = stopped at 180 minutes) and the unsplittable flow planner
-TFLOW with its width partition. Ours: the solvers of this repository on the TFLOW partition, and the MILP over
+TFLOW with its width partition. Ours: the solvers of this repository on the TFLOW partition (unsplittable flow
+with both demand models of `solve_ufp`), and the MILP over
 all partitions into the same number of TAMs.
 
-| W | lpsolve [ETW01] | TFLOW | TFLOW partition | ours on that partition: MILP | unsplittable flow | best fit | greedy | ours, same W and B: MILP | widths | against TFLOW |
-|---:|---:|---:|---|---:|---:|---:|---:|---:|---|---:|
-| 16 | 42476 | 43290 | 9+5+2 | 42424 | 50002 | 43086 | 44455 | 42268 | 2+6+8 | -2.36% |
-| 20 | 34493 | 35502 | 17+2+1 | 33894 | 36533 | 41331 | 34923 | 33894 | 1+2+17 | -4.53% |
-| 24 | 28862 | 29023 | 18+5+1 | 28546 | 34728 | 28826 | 31272 | 28292 | 2+5+17 | -2.52% |
-| 28 | 26964 | 24701 | 16+5+5+2 | 24701 | 38663 | 24701 | 24701 | 23997 | 1+2+9+16 | -2.85% |
-| 32 | 22945 | 21567 | 17+9+6 | 22474 | 33081 | 25787 | 22673 | 21518 | 5+9+18 | -0.23% |
-| 36 | 19858 | 19757 | 10+10+7+5+4 | 19757 | 21714 | 19757 | 19757 | 19034 | 2+2+5+10+17 | -3.66% |
-| 40 | 19573 | 18799 | 12+12+7+5+4 | 18799 | 29424 | 18905 | 18799 | 17590 | 2+3+4+12+19 | -6.43% |
-| 48 | 18999+ | 17210 | 19+19+6+4 | 17209 | 20072 | 17209 | 17209 | 14666 | 5+9+16+18 | -14.78% |
-| 52 | 16928+ | 16084 | 32+8+6+6 | 16075 | 21362 | 16180 | 16075 | 13451 | 5+11+16+20 | -16.37% |
-| 56 | 15694+ | 13488 | 20+16+16+4 | 13323 | 16197 | 16197 | 13637 | 12846 | 4+16+17+19 | -4.76% |
-| 60 | 15694+ | 12611 | 19+19+18+4 | 12610 | 13652 | 13817 | 13652 | 12202 | 5+7+16+32 | -3.24% |
-| 64 | 15694+ | 12466 | 20+20+20+4 | 12462 | 13323 | 12462 | 13323 | 10985 | 5+8+19+32 | -11.88% |
+| W | lpsolve [ETW01] | TFLOW | TFLOW partition | ours on that partition: MILP | unsplittable flow, bits | unsplittable flow, time | flow + moves | best fit | greedy | ours, same W and B: MILP | widths | against TFLOW |
+|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---|---:|
+| 16 | 42476 | 43290 | 9+5+2 | 42424 | 47161 | 50002 | 42433 | 43086 | 44455 | 42268 | 2+6+8 | -2.36% |
+| 20 | 34493 | 35502 | 17+2+1 | 33894 | 35466 | 36533 | 33894 | 41331 | 34923 | 33894 | 1+2+17 | -4.53% |
+| 24 | 28862 | 29023 | 18+5+1 | 28546 | 28987 | 34728 | 28546 | 28826 | 31272 | 28292 | 2+5+17 | -2.52% |
+| 28 | 26964 | 24701 | 16+5+5+2 | 24701 | 24701 | 38663 | 24701 | 24701 | 24701 | 23997 | 1+2+9+16 | -2.85% |
+| 32 | 22945 | 21567 | 17+9+6 | 22474 | 24046 | 33081 | 22474 | 25787 | 22673 | 21518 | 5+9+18 | -0.23% |
+| 36 | 19858 | 19757 | 10+10+7+5+4 | 19757 | 23158 | 21714 | 19757 | 19757 | 19757 | 19034 | 2+2+5+10+17 | -3.66% |
+| 40 | 19573 | 18799 | 12+12+7+5+4 | 18799 | 23158 | 29424 | 18799 | 18905 | 18799 | 17590 | 2+3+4+12+19 | -6.43% |
+| 48 | 18999+ | 17210 | 19+19+6+4 | 17209 | 19507 | 20072 | 17209 | 17209 | 17209 | 14666 | 5+9+16+18 | -14.78% |
+| 52 | 16928+ | 16084 | 32+8+6+6 | 16075 | 19938 | 21362 | 16075 | 16180 | 16075 | 13451 | 5+11+16+20 | -16.37% |
+| 56 | 15694+ | 13488 | 20+16+16+4 | 13323 | 17856 | 16197 | 13637 | 16197 | 13637 | 12846 | 4+16+17+19 | -4.76% |
+| 60 | 15694+ | 12611 | 19+19+18+4 | 12610 | 15068 | 13652 | 13652 | 13817 | 13652 | 12202 | 5+7+16+32 | -3.24% |
+| 64 | 15694+ | 12466 | 20+20+20+4 | 12462 | 16581 | 13323 | 13323 | 12462 | 13323 | 10985 | 5+8+19+32 | -11.88% |
 
-- On the TFLOW partition our optimal assignment is at or below the TFLOW time in 11 of 12 rows and our unsplittable flow solver in 0 of 12.
+- On the TFLOW partition our optimal assignment is at or below the TFLOW time in 11 of 12 rows.
+- Unsplittable flow on the TFLOW partition, against the TFLOW time: with test data as commodity (TAM capacity
+  C * w_j, the model of the paper) at or below it in 3 of 12 rows, mean +15.23%, worst +33.01%; with test time as commodity in 0 of 12 rows, mean +24.92%, worst +56.52%.
+- "Flow + moves" is `solve_ufp(...; improve=true)`: the better of the two roundings followed by moves and exchanges
+  off the longest TAM. It is at or below the TFLOW time in 8 of 12 rows and equals our optimum for the partition in 8 of 12. The paper does not describe such a step; it is listed to show how far the rounding is from a local optimum.
 - Over all partitions with the same number of TAMs our MILP is below both published columns in 12 of 12 rows.
 - Where our optimum on the TFLOW partition is above the TFLOW time (W = 32: 21567 is one cycle from the 21566 of
   the partition 4+10+18 above), the printed partition and time do not fit our core test times; TFLOW predates
   the ITC'02 files and its core test time table is not available to us.
-- Our unsplittable flow solver is clearly behind TFLOW on these partitions. The paper gives the TAM arc a capacity
-  proportional to its width (T * w_j) and the demand of a core in test bits; `solve_ufp` takes as demand the time
-  on the fastest TAM and gives every TAM the same capacity, which is weak when the widths are very unequal.

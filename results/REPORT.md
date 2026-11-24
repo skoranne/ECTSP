@@ -12,7 +12,7 @@ The check of the MILP and of the core test times against published results is in
   all solvers see only that table.
 - Solvers:
   - **MILP**: widths and assignment in one model (JuMP), solved by HiGHS and by cuOpt. This is the exact method and the reference below.
-  - **unsplittable flow**: fractional assignment by maximum flow, rounded with the Dinitz-Garg-Goemans algorithm.
+  - **unsplittable flow**: fractional assignment by maximum flow, rounded with the Dinitz-Garg-Goemans algorithm; better of the two demand models (test data with TAM capacity proportional to the width, and test time).
   - **greedy**: longest test first, each core to the TAM on which it finishes earliest.
   - **best fit**: best fit decreasing into TAMs of capacity C, smallest feasible C by bisection.
   - **shortest job first**: the greedy rule with the cores in increasing order.
@@ -37,17 +37,17 @@ Best B <= 4 for every method. In brackets: excess over the MILP.
 | u226 | 5 | 16 | 14491 | 18663 | **18663** | **18663** | **18663** | 22105 (+18.44%) |
 | u226 | 5 | 32 | 7246 | 10665 | **10665** | **10665** | **10665** | **10665** |
 | u226 | 5 | 64 | 5333 | 7999 | **7999** | 8084 (+1.06%) | **7999** | **7999** |
-| d281 | 7 | 16 | 7621 | 7956 | 8208 (+3.17%) | **7956** | **7956** | 8926 (+12.19%) |
+| d281 | 7 | 16 | 7621 | 7956 | 8117 (+2.02%) | **7956** | **7956** | 8926 (+12.19%) |
 | d281 | 7 | 32 | 3926 | 4084 | 4163 (+1.93%) | **4084** | **4084** | 5333 (+30.58%) |
 | d281 | 7 | 64 | 3926 | 3926 | **3926** | **3926** | **3926** | 4515 (+15.00%) |
-| d695 | 10 | 16 | 41232 | 42268 | 47320 (+11.95%) | 42424 (+0.37%) | **42268** | 44856 (+6.12%) |
-| d695 | 10 | 32 | 20616 | 21437 | 23010 (+7.34%) | 21461 (+0.11%) | 21461 (+0.11%) | 24195 (+12.87%) |
+| d695 | 10 | 16 | 41232 | 42268 | 42424 (+0.37%) | 42424 (+0.37%) | **42268** | 44856 (+6.12%) |
+| d695 | 10 | 32 | 20616 | 21437 | 21461 (+0.11%) | 21461 (+0.11%) | 21461 (+0.11%) | 24195 (+12.87%) |
 | d695 | 10 | 64 | 10308 | 10985 | 11564 (+5.27%) | 12376 (+12.66%) | 11274 (+2.63%) | 13323 (+21.28%) |
 | h953 | 8 | 16 | 119357 | 119357 | **119357** | **119357** | **119357** | 122636 (+2.75%) |
 | h953 | 8 | 32 | 119357 | 119357 | **119357** | **119357** | **119357** | 120676 (+1.11%) |
 | h953 | 8 | 64 | 119357 | 119357 | **119357** | **119357** | **119357** | 120676 (+1.11%) |
-| g1023 | 14 | 16 | 30419 | 31398 | 34002 (+8.29%) | 31575 (+0.56%) | 31649 (+0.80%) | 36448 (+16.08%) |
-| g1023 | 14 | 32 | 15210 | 16651 | 17405 (+4.53%) | 16685 (+0.20%) | 16938 (+1.72%) | 21371 (+28.35%) |
+| g1023 | 14 | 16 | 30419 | 31398 | 33194 (+5.72%) | 31575 (+0.56%) | 31649 (+0.80%) | 36448 (+16.08%) |
+| g1023 | 14 | 32 | 15210 | 16651 | 17258 (+3.65%) | 16685 (+0.20%) | 16938 (+1.72%) | 21371 (+28.35%) |
 | g1023 | 14 | 64 | 14794 | 14794 | **14794** | **14794** | **14794** | 19604 (+32.51%) |
 | f2126 | 4 | 16 | 335334 | 372125 | **372125** | **372125** | **372125** | 404199 (+8.62%) |
 | f2126 | 4 | 32 | 335334 | 335334 | **335334** | **335334** | **335334** | **335334** |
@@ -55,17 +55,17 @@ Best B <= 4 for every method. In brackets: excess over the MILP.
 | q12710 | 4 | 16 | 2222349 | 2222349 | **2222349** | **2222349** | **2222349** | 2261769 (+1.77%) |
 | q12710 | 4 | 32 | 2222349 | 2222349 | **2222349** | **2222349** | **2222349** | **2222349** |
 | q12710 | 4 | 64 | 2222349 | 2222349 | **2222349** | **2222349** | **2222349** | **2222349** |
-| p22810 | 28 | 16 | 421473 | 434957 | 467506 (+7.48%) | 438437 (+0.80%) | 441163 (+1.43%) | 536622 (+23.37%) |
-| p22810 | 28 | 32 | 210737 | 229612 | 256012 (+11.50%) | 236088 (+2.82%) | 234466 (+2.11%) | 285959 (+24.54%) |
+| p22810 | 28 | 16 | 421473 | 434957 | 450699 (+3.62%) | 438437 (+0.80%) | 441163 (+1.43%) | 536622 (+23.37%) |
+| p22810 | 28 | 32 | 210737 | 229612 | 245822 (+7.06%) | 236088 (+2.82%) | 234466 (+2.11%) | 285959 (+24.54%) |
 | p22810 | 28 | 64 | 105369 | 140927 | 155611 (+10.42%) | 149265 (+5.92%) | 146609 (+4.03%) | 172856 (+22.66%) |
-| p34392 | 19 | 16 | 936882 | 972352 | 1158654 (+19.16%) | 974032 (+0.17%) | 980782 (+0.87%) | 1119293 (+15.11%) |
-| p34392 | 19 | 32 | 544579 | 544579 | 584524 (+7.34%) | **544579** | **544579** | 683227 (+25.46%) |
+| p34392 | 19 | 16 | 936882 | 972352 | 1023511 (+5.26%) | 974032 (+0.17%) | 980782 (+0.87%) | 1119293 (+15.11%) |
+| p34392 | 19 | 32 | 544579 | 544579 | 580201 (+6.54%) | **544579** | **544579** | 683227 (+25.46%) |
 | p34392 | 19 | 64 | 544579 | 544579 | **544579** | **544579** | **544579** | 605443 (+11.18%) |
-| p93791 | 32 | 16 | 1749388 | 1763958 | 1852513 (+5.02%) | 1778871 (+0.85%) | 1776165 (+0.69%) | 1871718 (+6.11%) |
-| p93791 | 32 | 32 | 874694 | 886518 | 954083 (+7.62%) | 894849 (+0.94%) | 892765 (+0.70%) | 950781 (+7.25%) |
-| p93791 | 32 | 64 | 437347 | 447144 | 485185 (+8.51%) | 456390 (+2.07%) | 455621 (+1.90%) | 499607 (+11.73%) |
+| p93791 | 32 | 16 | 1749388 | 1763958 | 1846341 (+4.67%) | 1778871 (+0.85%) | 1776165 (+0.69%) | 1871718 (+6.11%) |
+| p93791 | 32 | 32 | 874694 | 886518 | 930103 (+4.92%) | 894849 (+0.94%) | 892765 (+0.70%) | 950781 (+7.25%) |
+| p93791 | 32 | 64 | 437347 | 447144 | 467463 (+4.54%) | 456390 (+2.07%) | 455621 (+1.90%) | 499607 (+11.73%) |
 | t512505 | 31 | 16 | 10453470 | 10530995 | **10530995** | **10530995** | **10530995** | 14804656 (+40.58%) |
-| t512505 | 31 | 32 | 5228420 | 5268868 | 5269457 (+0.01%) | **5268868** | **5268868** | 7508533 (+42.51%) |
+| t512505 | 31 | 32 | 5228420 | 5268868 | **5268868** | **5268868** | **5268868** | 7508533 (+42.51%) |
 | t512505 | 31 | 64 | 5228420 | 5228420 | **5228420** | **5228420** | **5228420** | 6450314 (+23.37%) |
 | a586710 | 5 | 16 | 38029607 | 41547436 | **41547436** | **41547436** | **41547436** | 48868471 (+17.62%) |
 | a586710 | 5 | 32 | 19014804 | 21058768 | **21058768** | **21058768** | **21058768** | 27972032 (+32.83%) |
@@ -77,7 +77,7 @@ Bold: the method reaches the MILP test time. LB(W) is the architecture-independe
 
 | method | mean excess | median | worst | reaches the MILP | best of the four |
 |---|---:|---:|---:|---:|---:|
-| unsplittable flow | 3.36% | 0.00% | 19.16% | 19 | 19 |
+| unsplittable flow | 1.88% | 0.00% | 10.42% | 20 | 21 |
 | greedy | 0.79% | 0.00% | 12.66% | 23 | 28 |
 | best fit | 0.47% | 0.00% | 4.03% | 25 | 32 |
 | shortest job first | 14.37% | 12.53% | 42.51% | 6 | 6 |
@@ -86,7 +86,7 @@ Bold: the method reaches the MILP test time. LB(W) is the architecture-independe
 
 | method | W=16 | W=32 | W=64 |
 |---|---:|---:|---:|
-| unsplittable flow | 4.59% | 3.36% | 2.14% |
+| unsplittable flow | 1.81% | 2.02% | 1.81% |
 | greedy | 0.23% | 0.34% | 1.81% |
 | best fit | 0.32% | 0.39% | 0.71% |
 | shortest job first | 14.06% | 17.12% | 11.91% |
@@ -96,15 +96,15 @@ Bold: the method reaches the MILP test time. LB(W) is the architecture-independe
 | SOC | cores | unsplittable flow | greedy | best fit | shortest job first |
 |---|---:|---:|---:|---:|---:|
 | u226 | 5 | 0.00% | 0.35% | 0.00% | 6.15% |
-| d281 | 7 | 1.70% | 0.00% | 0.00% | 19.26% |
-| d695 | 10 | 8.19% | 4.38% | 0.91% | 13.42% |
+| d281 | 7 | 1.32% | 0.00% | 0.00% | 19.26% |
+| d695 | 10 | 1.92% | 4.38% | 0.91% | 13.42% |
 | h953 | 8 | 0.00% | 0.00% | 0.00% | 1.65% |
-| g1023 | 14 | 4.27% | 0.26% | 0.84% | 25.65% |
+| g1023 | 14 | 3.12% | 0.26% | 0.84% | 25.65% |
 | f2126 | 4 | 0.00% | 0.00% | 0.00% | 2.87% |
 | q12710 | 4 | 0.00% | 0.00% | 0.00% | 0.59% |
-| p22810 | 28 | 9.80% | 3.18% | 2.52% | 23.52% |
-| p34392 | 19 | 8.83% | 0.06% | 0.29% | 17.25% |
-| p93791 | 32 | 7.05% | 1.28% | 1.10% | 8.36% |
+| p22810 | 28 | 7.03% | 3.18% | 2.52% | 23.52% |
+| p34392 | 19 | 3.93% | 0.06% | 0.29% | 17.25% |
+| p93791 | 32 | 4.71% | 1.28% | 1.10% | 8.36% |
 | t512505 | 31 | 0.00% | 0.00% | 0.00% | 35.49% |
 | a586710 | 5 | 0.51% | 0.00% | 0.00% | 18.17% |
 
@@ -114,7 +114,7 @@ Excess over the MILP with the same W and B (144 cases). With one TAM every metho
 
 | method | B=1 mean | B=2 mean | B=3 mean | B=4 mean | B=1 worst | B=2 worst | B=3 worst | B=4 worst |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| unsplittable flow | 0.00% | 5.37% | 8.65% | 5.11% | 0.00% | 38.54% | 38.27% | 23.98% |
+| unsplittable flow | 0.00% | 4.27% | 4.54% | 2.73% | 0.00% | 38.54% | 31.42% | 20.05% |
 | greedy | 0.00% | 0.78% | 0.98% | 1.31% | 0.00% | 4.81% | 8.06% | 18.18% |
 | best fit | 0.00% | 1.37% | 1.55% | 0.47% | 0.00% | 8.05% | 15.17% | 4.03% |
 | shortest job first | 0.00% | 16.31% | 19.59% | 18.26% | 0.00% | 40.58% | 49.61% | 49.45% |
@@ -125,28 +125,28 @@ Seconds on `spark-bc08`, summed over the widths and B = 1, 2, 3, 4. The combinat
 
 | SOC | cores | HiGHS | cuOpt | unsplittable flow | greedy | best fit | shortest job first |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| u226 | 5 | 8.04 | 15 | 0.79 | 0.12 | 0.0007 | 0.0003 |
-| d281 | 7 | 3.49 | 11 | 0.16 | 0.0008 | 0.0005 | 0.0005 |
-| d695 | 10 | 11 | 26 | 0.40 | 0.0010 | 0.0012 | 0.0007 |
-| h953 | 8 | 1.90 | 8.61 | 0.06 | 0.0009 | 0.0008 | 0.0010 |
-| g1023 | 14 | 13 | 22 | 0.38 | 0.0016 | 0.0014 | 0.0006 |
-| f2126 | 4 | 0.88 | 7.63 | 0.06 | 0.0018 | 0.0006 | 0.0006 |
-| q12710 | 4 | 2.04 | 8.25 | 0.09 | 0.0011 | 0.0011 | 0.0008 |
-| p22810 | 28 | 76 | 84 | 0.78 | 0.0020 | 0.0073 | 0.0008 |
-| p34392 | 19 | 9.14 | 64 | 0.39 | 0.0010 | 0.0011 | 0.0007 |
-| p93791 | 32 | 287 | 431 | 0.92 | 0.0012 | 0.0022 | 0.0007 |
-| t512505 | 31 | 13 | 24 | 0.84 | 0.0014 | 0.0009 | 0.0008 |
-| a586710 | 5 | 3.56 | 18 | 0.31 | 0.0009 | 0.0008 | 0.0004 |
-| **total** | | **430** | **722** | **5.17** | **0.14** | **0.02** | **0.0079** |
+| u226 | 5 | 8.04 | 15 | 1.13 | 0.18 | 0.0008 | 0.0005 |
+| d281 | 7 | 3.49 | 11 | 0.46 | 0.0009 | 0.0006 | 0.0007 |
+| d695 | 10 | 11 | 26 | 1.03 | 0.0010 | 0.0012 | 0.0011 |
+| h953 | 8 | 1.90 | 8.61 | 0.40 | 0.0009 | 0.0007 | 0.0007 |
+| g1023 | 14 | 13 | 22 | 0.75 | 0.0008 | 0.0012 | 0.0007 |
+| f2126 | 4 | 0.88 | 7.63 | 0.25 | 0.0010 | 0.0003 | 0.0003 |
+| q12710 | 4 | 2.04 | 8.25 | 0.28 | 0.0027 | 0.01 | 0.0006 |
+| p22810 | 28 | 76 | 84 | 1.43 | 0.0011 | 0.0026 | 0.0011 |
+| p34392 | 19 | 9.14 | 64 | 1.01 | 0.0011 | 0.0016 | 0.0007 |
+| p93791 | 32 | 287 | 431 | 1.58 | 0.0009 | 0.0022 | 0.0006 |
+| t512505 | 31 | 13 | 24 | 1.39 | 0.0015 | 0.0013 | 0.01 |
+| a586710 | 5 | 3.56 | 18 | 0.57 | 0.0017 | 0.0006 | 0.0004 |
+| **total** | | **430** | **722** | **10** | **0.19** | **0.03** | **0.02** |
 
 The first SOC of a sweep carries the compilation of the solver (visible in the unsplittable flow and greedy columns).
 
 ## Findings
 
-1. Ranking by mean excess over the MILP with the best B: best fit 0.47%, greedy 0.79%, unsplittable flow 3.36%, shortest job first 14.37%.
-2. Best fit reaches the MILP test time in 25 of 36 cases and is never more than 4.03% above it, in 0.02 s against 430 s of HiGHS for the whole sweep.
-3. The unsplittable flow rounding has the only worst-case guarantee of the four (TAM load at most the fractional load plus one demand; factor 2 for equal TAM widths), but on these SOCs it is behind the two longest-first heuristics: mean 3.36%, worst 19.16%. Its fractional test time is a lower bound for the given widths, which the list heuristics do not provide.
+1. Ranking by mean excess over the MILP with the best B: best fit 0.47%, greedy 0.79%, unsplittable flow 1.88%, shortest job first 14.37%.
+2. Best fit reaches the MILP test time in 25 of 36 cases and is never more than 4.03% above it, in 0.03 s against 430 s of HiGHS for the whole sweep.
+3. The unsplittable flow rounding has the only worst-case guarantee of the four (TAM load at most the fractional load plus one demand; factor 2 for equal TAM widths), but on these SOCs it is behind the two longest-first heuristics: mean 1.88%, worst 10.42%. Its fractional test time is a lower bound for the given widths, which the list heuristics do not provide.
 4. Shortest job first is the weakest order: the long tests arrive last and land on loaded TAMs (mean 14.37%, worst 42.51%).
-5. SOCs on which every method except shortest job first reaches the MILP at all widths: h953, f2126, q12710. There the longest core sets the test time (the MILP equals LB(W) at most widths), so any sensible assignment is optimal.
+5. SOCs on which every method except shortest job first reaches the MILP at all widths: h953, f2126, q12710, t512505.
 6. With the number of TAMs fixed the differences are larger than with the best B (table above): taking the best of B = 1, 2, 3, 4 hides a poor result at one B behind a good one at another.
 7. The MILP is exact but its time grows with the number of cores and the width: 1 of 144 cases not closed within the time limit; HiGHS needed 430 s and cuOpt 722 s for the 144 cases.
